@@ -1,2 +1,2 @@
-# book-rythm
+# book-rhythm
 Book reading speed meter
