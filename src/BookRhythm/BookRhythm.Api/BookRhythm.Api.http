@@ -1,0 +1,6 @@
+@BookRhythm.Api_HostAddress = http://localhost:5236
+
+GET {{BookRhythm.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
