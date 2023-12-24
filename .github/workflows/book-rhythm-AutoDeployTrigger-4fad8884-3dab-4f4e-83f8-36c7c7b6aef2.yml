@@ -1,0 +1,46 @@
+name: Trigger auto deployment for book-rhythm
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - 'src/BookRhythm/BookRhythm.Api/**'
+    - '.github/workflows/book-rhythm-AutoDeployTrigger-4fad8884-3dab-4f4e-83f8-36c7c7b6aef2.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.BOOKRHYTHM_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.BOOKRHYTHM_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.BOOKRHYTHM_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}src/BookRhythm/BookRhythm.Api 
+          registryUrl: docker.io
+          registryUsername: ${{ secrets.BOOKRHYTHM_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.BOOKRHYTHM_REGISTRY_PASSWORD }}
+          containerAppName: book-rhythm
+          resourceGroup: BookRhythmGroup
+          imageToBuild: emidio78/book-rhythm:${{ github.sha }}
+          dockerfilePath: Dockerfile
+
+
